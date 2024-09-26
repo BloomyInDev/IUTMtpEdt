@@ -1,2 +1,3 @@
 .venv/
 scrapper/*.png
+scrapper/__pycache__
