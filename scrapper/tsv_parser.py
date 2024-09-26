@@ -5,6 +5,8 @@ def OpenRawTSV(tsv_name: str) -> str:
 
 	del file
 
+	return raw_text
+
 def ParseRawText(raw_text: str, header_line: bool=True) -> dict[int: str]:
 	lines: list[str] = raw_text.split("\n")
 
