@@ -1,0 +1,27 @@
+services:
+    website:
+        image: "trafex/php-nginx:3.5.0"
+        container_name: website
+        ports:
+            - 8080:8080
+        volumes:
+            - ./php/src:/var/www/html
+            - ./php/config/nginx.conf:/etc/nginx/conf.d/default.conf
+    database:
+        image: "mariadb:11.2.4-jammy"
+        container_name: database
+        ports:
+            # /!\ Don't let this port open in public access
+            - 3306:3306
+        volumes:
+            - ./data:/var/lib/mysql
+        environment:
+            # Change this in production
+            - MARIADB_ROOT_PASSWORD=ThisPasswordIsntSecure
+    adminer:
+        image: adminer:4.8.1-standalone
+        container_name: adminer
+        ports:
+            # /!\ Don't let this port open in public access
+            - 8088:8080
+        restart: always
