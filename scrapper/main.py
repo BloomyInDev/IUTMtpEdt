@@ -53,5 +53,5 @@ with sync_playwright() as p:
         parsedEvents.append(
             raw_data
         )
-    with open("result.json") as f:
+    with open("result.json", "w") as f:
         dump(parsedEvents,f)
