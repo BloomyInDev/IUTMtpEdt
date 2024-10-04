@@ -146,6 +146,7 @@ def parse_page(pageContent: str):
 
 				else:
 					i += 1
+		
 		dataDict["students"] = event.copy()
 		dataDict["color"]=e["col"]
 
