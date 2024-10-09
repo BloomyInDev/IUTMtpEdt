@@ -195,4 +195,4 @@ with sync_playwright() as p:
 	print(f"Scrapping done in {end-start}s")
 	# pprint(data)
 	with open("result.json","w") as f:
-		dump(data, f, indent=4)
+		dump(data, f, indent=4, ensure_ascii=False)
