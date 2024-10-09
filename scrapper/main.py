@@ -3,7 +3,7 @@ from tsv_parser import parseTSV
 from json import dump
 from datetime import datetime
 
-import pprint
+from pprint import pprint
 
 from playwright.sync_api import Browser, Page
 from playwright.sync_api import sync_playwright
@@ -16,14 +16,6 @@ from bs4 import BeautifulSoup
 TSV_NAME: str = "liens_edt.tsv"
 
 URLS: dict[str, str] = parseTSV(TSV_NAME, True)
-
-DAYS = [
-	"#x-auto-14 > tbody .x-btn-mc > em > button",
-	"#x-auto-15 > tbody .x-btn-mc > em > button",
-	"#x-auto-16 > tbody .x-btn-mc > em > button",
-	"#x-auto-17 > tbody .x-btn-mc > em > button",
-	"#x-auto-18 > tbody .x-btn-mc > em > button",
-]
 
 # ---------------------------------------------------------------------
 
@@ -45,13 +37,14 @@ def click_btn(page: Page, selector: str):
 					resolve()
 					clearInterval(a)
 				}}
-			}},250)
+			}},100)
 		}})
 	}}
 	"""
 	)
 
-def click_next_week(page:Page):
+
+def click_next_week(page: Page):
 	return page.evaluate(
 		f"""
 	async () => {{
@@ -64,98 +57,69 @@ def click_next_week(page:Page):
 					resolve()
 					clearInterval(a)
 				}}
-			}},250)
+			}},100)
 		}})
 	}}
 	"""
 	)
 
-def parse_edt(page: Page, url: str):
-	page.goto(url)
-	print("Page loading")
-	page.wait_for_selector("div#Planning", timeout=60000)
-	sleep(.5)
-	data: dict[str : dict[str : str | list[str]]] = {}
 
-	# First Week
-	for i in range(len(DAYS)):
-		click_btn(page, DAYS[i])
+def parse_edt(page: Page, url: str):
+	print("\x1b[0KPage loading",end="\r")
+	page.goto(url)
+	print("\x1b[0KPage loaded",end="\r")
+	page.wait_for_selector("div#Planning", timeout=60000)
+	sleep(0.5)
+	data = []
+
+	# Loop to make
+	loopsToMake = 2
+	for i in range(loopsToMake):
+		print(f"\x1b[0KParsing week {i+1}",end="\r")
 		pageDump: str = page.content()
-		d = parse_page(pageDump)
-		print(f"Day {d['day']} parsed successfully !")
-		data[d["day"]] = d
-	
-	# Second Week
-	click_next_week(page)
-	for i in range(len(DAYS)):
-		click_btn(page, DAYS[i])
-		pageDump: str = page.content()
-		d = parse_page(pageDump)
-		print(f"Day {d['day']} parsed successfully !")
-		data[d["day"]] = d
-	
+		data.extend(parse_page(pageDump))
+		if i + 1 != loopsToMake:
+			click_next_week(page)
+
 	return data
 
 
 def parse_page(pageContent: str):
 	soup = BeautifulSoup(pageContent, "lxml")
-	day = soup.find("div", id="4", class_="labelLegend")
-	events: ResultSet[Tag] = soup.find_all("div", id=find_divs)
 
-	rawEvents: list[list[dict[str, list[str], str]]] = []
+	rawDays: list[Tag] = soup.find_all("div", class_="labelLegend")
+	days = list(map(lambda x: x.contents[-1].split(" ")[-1], rawDays))[1:7]
+
+	events: ResultSet[Tag] = soup.find_all("div", id=find_divs)
+	rawEvents = []
 
 	for event in events:
-		content = event.contents[0]
-		raw_data: list[str] = content["aria-label"].split(" null ")
+		rawData: list[str] = event.contents[0]["aria-label"].split(" null ").copy()
 
-		bgcolor = "#ffffff"
-		styles = event.parent.parent.select_one("table").attrs["style"].split(";")
-		for style in styles:
-			if style.startswith("background-color"):
-				bgcolor = style.split(":")[-1]
+		# Search for "left" style
+		styles = event.parent.get_attribute_list("style")[0]
+		pos = -1
+		for style in styles.replace(" ", "").split(";"):
+			if style.startswith("left"):
+				pos = int(style.split(":")[-1].strip("px"))//202
+		if pos == -1:
+			# If it wasn't found, the layout changed so its needs
+			raise Exception("Pos should be modified here")
+		
+		result: dict[str, str | int] = {}
 
-		rawEvents.append({"raw": raw_data, "col": bgcolor})
+		result["name"] = rawData.pop(0).strip()
 
-	parsedEvents: list[dict[str, str | int]] = []
-	newRawEvents = rawEvents.copy()
+		tempTimeStart, tempEndTime = rawData.pop(-1).split(" - ")
+		result["startTime"]=int(get_date(days[pos],tempTimeStart).timestamp())
+		result["endTime"]=int(get_date(days[pos],tempEndTime).timestamp())
 
-	for e in newRawEvents:
-		event = e["raw"]
-		dataDict = {}
-		tempForName = event.pop(0)
-
-		if tempForName.startswith(" "):
-			tempForName = tempForName.split(" ", 1)[1]
-
-		dataDict["name"] = tempForName
-		tempTimeStart, tempEndTime = event.pop(-1).split(" - ")
-		tempDate = day.text.split(" ")[1]
-
-		dataDict["startTime"] = int(
-			datetime(
-				int(tempDate.split("/")[2]),
-				int(tempDate.split("/")[1]),
-				int(tempDate.split("/")[0]),
-				int(tempTimeStart.split("h")[0]),
-				int(tempTimeStart.split("h")[1]),
-			).timestamp()
-		)
-		dataDict["endTime"] = int(
-			datetime(
-				int(tempDate.split("/")[2]),
-				int(tempDate.split("/")[1]),
-				int(tempDate.split("/")[0]),
-				int(tempEndTime.split("h")[0]),
-				int(tempEndTime.split("h")[1]),
-			).timestamp()
-		)
-
-		dataDict["profs"] = []
+		result["profs"] = []
 		tempForPlace = []
 
-		if len(event) > 2:
-			tempForPlace.append(event.pop(0))
-			tempForPlace.append(event.pop(0))
+		if len(rawData) > 2:
+			tempForPlace.append(rawData.pop(0))
+			tempForPlace.append(rawData.pop(0))
 			tempPlace = ""
 
 			if tempForPlace[1] == "":
@@ -168,17 +132,16 @@ def parse_page(pageContent: str):
 				tempPlace = f"Campus {tempForPlace} - "
 
 			tempPlace += tempForPlace[0]
-			dataDict["place"] = tempPlace
-
+			result["place"] = tempPlace
 		else:
-			dataDict["place"] = "Pas de salle"
-
-		while any("   " in d for d in event):
+			result["place"] = "Pas de salle"
+		
+		while any("   " in d for d in rawData):
 			i = 0
-			while i < len(event):
-				if "   " in event[i]:
-					dataDict["profs"].append(
-						event.pop(i)
+			while i < len(rawData):
+				if "  " in rawData[i]:
+					result["profs"].append(
+						rawData.pop(i)
 						.replace("   ", "&")
 						.replace(" ", "-")
 						.replace("&", " ")
@@ -187,37 +150,49 @@ def parse_page(pageContent: str):
 				else:
 					i += 1
 
-		dataDict["students"] = event.copy()
-		dataDict["color"] = e["col"]
+		result["students"] = rawData.copy()
+		result["color"] = get_background_color(event)
 
-		parsedEvents.append(dataDict)
+		rawEvents.append(result)
 
-	return {"day": day.text.split(" ")[1], "event": parsedEvents}
+	return rawEvents
+
+
+def get_background_color(element: Tag):
+	bgcolor = "#ffffff"
+	styles = element.parent.parent.select_one("table").attrs["style"].split(";")
+	for style in styles:
+		if style.startswith("background-color"):
+			bgcolor: str = style.split(":")[-1]
+	return bgcolor
+
+
+def get_date(date: str, time: str) -> datetime:
+	return datetime(
+		int(date.split("/")[2]),
+		int(date.split("/")[1]),
+		int(date.split("/")[0]),
+		int(time.split("h")[0]),
+		int(time.split("h")[1]),
+	)
 
 
 with sync_playwright() as p:
-	print("Starting Browser (Chromium)")
+	print("Starting scrapper")
+	print("\x1b[0KStarting Browser (Chromium)",end="\r")
 	start = perf_counter()
-	browser: Browser = p.chromium.launch(headless=False)
+	browser: Browser = p.chromium.launch(headless=True)
 	page: Page = browser.new_page()
 
-	data: dict[str, dict[str : dict[str : str | list[str]]]] = {}
+	data = []
 
-	#for key in URLS.keys():
-	for key in ["S4"]:
-		data[key] = parse_edt(page, URLS[key])
+	for key in URLS.keys():
+	# for key in ["S4"]:
+		data.extend(parse_edt(page, URLS[key]))
 	browser.close()
 
 	end = perf_counter()
-	print(f"Scrapping done in {end-start}s")	
-
-	result = []
-	for classe in data.values():
-		dates = classe.keys()
-
-		for date in dates:
-			dico = classe[date]
-			result += dico["event"]
-	
-	with open("result2.json","w") as f:
-		dump(result, f, indent=4)
+	print(f"Scrapping done in {end-start}s")
+	# pprint(data)
+	with open("result.json","w") as f:
+		dump(data, f, indent=4)
