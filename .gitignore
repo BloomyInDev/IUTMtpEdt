@@ -4,4 +4,4 @@ scrapper/*.png
 scrapper/__pycache__
 data/
 page.html
-result.json
+*.json

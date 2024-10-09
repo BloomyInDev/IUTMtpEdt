@@ -1,4 +1,4 @@
-from time import sleep
+from time import sleep, perf_counter
 from tsv_parser import parseTSV
 from json import dump
 from datetime import datetime
@@ -38,27 +38,62 @@ def click_btn(page: Page, selector: str):
 	async () => {{
 		const btn = document.querySelector("{selector}");
 		btn.click();
-		await new Promise(r => setTimeout(r, 5000));
+		await new Promise((resolve,reject)=>{{
+		const a = setInterval(
+			()=>{{
+				if (document.querySelector("img.gwt-Image")==null) {{
+					resolve()
+					clearInterval(a)
+				}}
+			}},250)
+		}})
 	}}
 	"""
 	)
 
+def click_next_week(page:Page):
+	return page.evaluate(
+		f"""
+	async () => {{
+		const btn = document.querySelector("#x-auto-{int(page.query_selector_all(".x-btn-pressed")[-1].get_attribute("id").split("-")[-1])+1} > tbody .x-btn-mc > em > button");
+		btn.click();
+		await new Promise((resolve,reject)=>{{
+		const a = setInterval(
+			()=>{{
+				if (document.querySelector("img.gwt-Image")==null) {{
+					resolve()
+					clearInterval(a)
+				}}
+			}},250)
+		}})
+	}}
+	"""
+	)
 
 def parse_edt(page: Page, url: str):
 	page.goto(url)
 	print("Page loading")
 	page.wait_for_selector("div#Planning", timeout=60000)
-	sleep(1)
-
+	sleep(.5)
 	data: dict[str : dict[str : str | list[str]]] = {}
 
+	# First Week
 	for i in range(len(DAYS)):
 		click_btn(page, DAYS[i])
 		pageDump: str = page.content()
 		d = parse_page(pageDump)
 		print(f"Day {d['day']} parsed successfully !")
 		data[d["day"]] = d
-
+	
+	# Second Week
+	click_next_week(page)
+	for i in range(len(DAYS)):
+		click_btn(page, DAYS[i])
+		pageDump: str = page.content()
+		d = parse_page(pageDump)
+		print(f"Day {d['day']} parsed successfully !")
+		data[d["day"]] = d
+	
 	return data
 
 
@@ -161,17 +196,20 @@ def parse_page(pageContent: str):
 
 
 with sync_playwright() as p:
-	print("Starting Browser (WebKit)")
-	browser: Browser = p.webkit.launch(headless=False)
+	print("Starting Browser (Chromium)")
+	start = perf_counter()
+	browser: Browser = p.chromium.launch(headless=False)
 	page: Page = browser.new_page()
 
 	data: dict[str, dict[str : dict[str : str | list[str]]]] = {}
 
-	for key in URLS.keys():
-	# for key in ["S4"]:
+	#for key in URLS.keys():
+	for key in ["S4"]:
 		data[key] = parse_edt(page, URLS[key])
 	browser.close()
-	
+
+	end = perf_counter()
+	print(f"Scrapping done in {end-start}s")	
 
 	result = []
 	for classe in data.values():
@@ -180,8 +218,6 @@ with sync_playwright() as p:
 		for date in dates:
 			dico = classe[date]
 			result += dico["event"]
-
-	pprint.pprint(result)
-
+	
 	with open("result2.json","w") as f:
 		dump(result, f, indent=4)
