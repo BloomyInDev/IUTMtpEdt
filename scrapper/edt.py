@@ -178,19 +178,24 @@ def get_date(date: str, time: str) -> datetime:
 	)
 
 
-def scrape_edt() -> list[dict[str,Any]]:
+def scrape_edt(do_only:list[str]|None=None, headless:bool=True) -> list[dict[str,Any]]:
 	with sync_playwright() as p:
 		print("Starting scrapper")
 		print("\x1b[0KStarting Browser (Chromium)", end="\r")
 		start = perf_counter()
-		browser: Browser = p.chromium.launch(headless=True)
+		browser: Browser = p.chromium.launch(headless=headless)
 		page: Page = browser.new_page()
 
 		data = []
+		if do_only == None:
+			for key in URLS.keys():
+				data.extend(parse_edt(page, URLS[key]))
+		else:
+			for group in do_only:
+				assert group in URLS.keys(), "This group isn't in the URLS"
+			for key in do_only:
+				data.extend(parse_edt(page, URLS[key]))
 
-		for key in URLS.keys():
-		# for key in ["S4"]:
-			data.extend(parse_edt(page, URLS[key]))
 		browser.close()
 
 		end = perf_counter()
