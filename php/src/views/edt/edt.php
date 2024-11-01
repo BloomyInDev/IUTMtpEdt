@@ -4,7 +4,8 @@ for ($i=0; $i < count($cours); $i++) {
     $date = date("d/m/o", $cours[$i]["timestampStart"]);
     $timeStart = date("H:i", $cours[$i]["timestampStart"]);
     $timeEnd = date("H:i", $cours[$i]["timestampEnd"]);
-    echo "<div class=\"cours\"><p>";
+    $color = $cours[$i]["color"];
+    echo "<div class=\"cours classe-$\"><p>";
     echo $cours[$i]["nom"];
     echo "</p><p>$date - $timeStart - $timeEnd</p><p class=\"\">";
     foreach ($cours[$i]["profs"] as $k => $prof) {
@@ -20,6 +21,8 @@ for ($i=0; $i < count($cours); $i++) {
             echo " - ";
         }
     }
+    echo "</p><p>";
+    echo $cours[$i]["place"];
     echo "</p></div>";
 }
 ?>

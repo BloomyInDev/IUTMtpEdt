@@ -6,8 +6,9 @@ class Cours extends Model {
         $this->getConnection();
     }
 
-    public function getAllWithDatas() {
-        $sql = "SELECT * FROM ".$this->table."";
+    public function getAllInTimeOrder()
+    {
+        $sql = "SELECT * FROM ".$this->table." ORDER BY timeStart ASC";
         $query = $this->_connection->query($sql);
         return $query->fetch_all();
     }

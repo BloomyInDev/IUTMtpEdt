@@ -15,11 +15,20 @@ class Edt extends Controller
     {
         $this->render("edt", ["cours"=>$this->getCleanCours()]);
     }
+    public function classe()
+    {
+        if (array_key_exists("c", $_GET)) {
+            $this->render("edt", ["cours"=>$this->getCoursForClasse(explode(",",$_GET["c"]))]);
+        } else {
+            header('Location: /edt');
+            die();
+        }   
+    }
     public function raw()
     {
         $this->render("raw", ["cours"=>$this->getCleanCours()]);
     }
-    protected function getCleanCours()
+    private function getCleanCours()
     {
         $cours = new Cours();
         $enseigner = new Enseigner();
@@ -27,8 +36,8 @@ class Edt extends Controller
         $prof = new Prof();
         $classe = new Classe();
         $cours_data = [];
-        foreach ($cours->getAll() as $i => $data) {
-            $cours_data[$i] = ["id"=>$data[0],"nom"=>$data[1],"timestampStart"=>$data[2],"timestampEnd"=>$data[3]];
+        foreach ($cours->getAllInTimeOrder() as $i => $data) {
+            $cours_data[$i] = ["id"=>$data[0],"nom"=>$data[1],"timestampStart"=>$data[2],"timestampEnd"=>$data[3],"place"=>$data[4],"color"=>$data[5]];
             $cours_data[$i]["raw_profs"] = $enseigner->getProfIdOfCours($data[0]);
             $cours_data[$i]["raw_classes"] = $participants->getClasseIdOfCours($data[0]);
             $cours_data[$i]["profs"] = [];
@@ -42,5 +51,21 @@ class Edt extends Controller
         }
         
         return $cours_data;
+    }
+
+    private function getCoursForClasse (array $classesToFind) {
+        $coursForClasse = [];
+        foreach ($this->getCleanCours() as $cours) {
+            $classeDiscovered = false;
+            foreach ($cours["classes"] as $classe) {
+                if (in_array($classe[0][1],$classesToFind)) {
+                    $classeDiscovered = true;
+                }   
+            }
+            if ($classeDiscovered) {
+                array_push($coursForClasse, $cours);
+            }
+        }
+        return $coursForClasse;
     }
 }
