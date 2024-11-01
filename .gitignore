@@ -6,3 +6,4 @@ scrapper/switch_to_venv.sh
 data/
 page.html
 *.json
+*.code-workspace
