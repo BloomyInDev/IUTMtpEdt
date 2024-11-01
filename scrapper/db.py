@@ -42,11 +42,11 @@ class Professor(Db):
         return
 
     def get(self, first_name: str | None = None, last_name: str | None = None) -> list[tuple[int,str,str]]:
-        assert (
-            (first_name == None and last_name != None) 
-            or
-            (first_name != None and last_name == None)
-        ), "You can't give me nothing to get someone :("
+        #assert (
+        #    (first_name == None and last_name != None) 
+        #    or
+        #    (first_name != None and last_name == None)
+        #), "You can't give me nothing to get someone :("
 
         result = None
 
@@ -110,6 +110,8 @@ class Event(Db):
     def __init__(self) -> None:
         super().__init__()
         self.table = "Cours"
+        self.prof_link_table = "Enseigner"
+        self.group_link_table = "Participants"
         self.prof_db = Professor()
         self.group_db = Group()
 
@@ -133,7 +135,36 @@ class Event(Db):
         for group in groups:
             if not ((group,) in self.group_db.get_all_names()):
                 self.group_db.add(group)
-            group_ids.append(self.group_db.get(group))
+            group_ids.append(self.group_db.get(group)[0][0])
         
+        self.cur.execute(f"SELECT COUNT(*) FROM {self.table} WHERE name = %s AND timeStart = %s AND timeEnd = %s", (name,timeStart,timeEnd))
+        if self.cur.fetchall()[0][0] == 0:
+            self.cur.execute(
+                f"INSERT INTO {self.table} (name, timeStart, timeEnd) VALUES (%s, %s, %s)",
+                (
+                    name,
+                    timeStart,
+                    timeEnd
+                ),
+            )
+            self.db.commit()
+        self.cur.execute(f"SELECT id FROM {self.table} WHERE name = %s AND timeStart = %s AND timeEnd = %s", (name,timeStart,timeEnd))
+        event_id = self.cur.fetchall()[0][0]
         
+        for group_id in group_ids:
+            self.cur.execute(f"SELECT COUNT(*) FROM {self.group_link_table} WHERE idClasse = %s AND idCours = %s", (group_id, event_id))
+            if self.cur.fetchall()[0][0] == 0:
+                self.cur.execute(
+                    f"INSERT INTO {self.group_link_table} (idClasse, idCours) VALUES (%s, %s)", (group_id, event_id)
+                )
+                self.db.commit()
+        
+        for prof_id in prof_ids:
+            self.cur.execute(f"SELECT COUNT(*) FROM {self.prof_link_table} WHERE idProf = %s AND idCours = %s", (prof_id, event_id))
+            if self.cur.fetchall()[0][0] == 0:
+                self.cur.execute(
+                    f"INSERT INTO {self.prof_link_table} (idProf, idCours) VALUES (%s, %s)", (prof_id, event_id)
+                )
+                self.db.commit()
+
         return
