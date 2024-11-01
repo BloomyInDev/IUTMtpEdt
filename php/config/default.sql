@@ -20,6 +20,8 @@ CREATE TABLE Cours (
     name TINYTEXT NOT NULL,
     timeStart INT8 NOT NULL,
     timeEnd INT8 NOT NULL,
+    place TEXT NOT NULL,
+    color TINYTEXT NOT NULL,
     PRIMARY KEY(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
