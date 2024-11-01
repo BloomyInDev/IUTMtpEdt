@@ -6,7 +6,7 @@ for ($i=0; $i < count($cours); $i++) {
     $timeEnd = date("H:i", $cours[$i]["timestampEnd"]);
     echo "<div class=\"cours\"><p>";
     echo $cours[$i]["nom"];
-    echo "</p><p>$date - $timeStart - $timeEnd</p><p class=\"hidden\">";
+    echo "</p><p>$date - $timeStart - $timeEnd</p><p class=\"\">";
     foreach ($cours[$i]["profs"] as $k => $prof) {
         echo $prof[0][1]." ".$prof[0][2];
         if ($k != end(array_keys($cours[$i]["profs"]))) {
