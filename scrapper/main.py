@@ -31,9 +31,14 @@ if __name__ == "__main__":
 	event_db = db.Event()
 	for event in edt:
 		prepared_profs = []
-		for prof in profs:
+		for prof in event["profs"]:
+			prof = {
+				"raw": prof,
+				"firstname": prof.split(" ")[1],
+				"lastname": prof.split(" ")[0],
+			}
 			prepared_profs.append((prof["lastname"],prof["firstname"]))
-		event_db.add(event["name"], event["startTime"], event["endTime"], prepared_profs, event["students"])
+		event_db.add(event["name"], event["startTime"], event["endTime"], prepared_profs, event["students"], event["place"], event["color"])
 	print("Done adding events !")
 	#print(prof_db.get_all_names())
 
