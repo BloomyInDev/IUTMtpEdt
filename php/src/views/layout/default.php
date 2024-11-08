@@ -8,7 +8,7 @@
 </head>
 
 <body id="main">
-   <?= $content ?>
+   <?php echo $content ?>
 </body>
 
 </html>

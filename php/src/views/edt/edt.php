@@ -1,5 +1,18 @@
 <link rel="stylesheet" href="/public/styles/edt.css">
+<table>
+    <thead>
+        <tr>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            
+        </tr>
+    </tbody>
+</table>
 <?php
+
 for ($i=0; $i < count($cours); $i++) { 
     $date = date("d/m/o", $cours[$i]["timestampStart"]);
     $timeStart = date("H:i", $cours[$i]["timestampStart"]);

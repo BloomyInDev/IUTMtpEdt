@@ -24,19 +24,19 @@ if ($params[0] != "") {
             $controller->$action();
         } else {
             http_response_code(404);
-            require_once ROOT . "controllers/Main.php";
+            include_once ROOT . "controllers/Main.php";
             $controller = new Main();
             $controller->error();
         }
     } else {
         http_response_code(404);
-        require_once ROOT . "controllers/Main.php";
+        include_once ROOT . "controllers/Main.php";
         $controller = new Main();
         $controller->error();
     }
 } else {
     // No specific path asked, going to Main page
-    require_once ROOT . "controllers/Main.php";
+    include_once ROOT . "controllers/Main.php";
     $controller = new Main();
     $controller->index();
 }

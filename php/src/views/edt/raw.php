@@ -1,1 +1,1 @@
-<?= var_dump($cours[0]) ?>
+<?php echo var_dump($cours[0]) ?>

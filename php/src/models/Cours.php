@@ -1,14 +1,17 @@
 <?php
 
-class Cours extends Model {
-    public function __construct() {
+class Cours extends Model
+{
+    public function __construct()
+    {
         $this->table = "Cours";
         $this->getConnection();
         $this->table_link_prof = "Enseigner";
         $this->table_link_classe = "Participants";
     }
 
-    public function getProfIdOfCours(int $id) {
+    public function getProfIdOfCours(int $id)
+    {
         $sql = "SELECT idProf FROM ".$this->table_link_prof." WHERE idCours = ".$id;
         $query = $this->_connection->query($sql);
         $result = [];
@@ -18,7 +21,8 @@ class Cours extends Model {
         return $result;
     }
 
-    public function getClasseIdOfCours(int $id) {
+    public function getClasseIdOfCours(int $id)
+    {
         $sql = "SELECT idClasse FROM ".$this->table_link_classe." WHERE idCours = ".$id;
         $query = $this->_connection->query($sql);
         $result = [];
