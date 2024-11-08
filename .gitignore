@@ -5,5 +5,5 @@ scrapper/__pycache__
 scrapper/switch_to_venv.sh
 data/
 page.html
-*.json
+scrapper/*.json
 *.code-workspace
