@@ -35,6 +35,7 @@ const colors = {
         </div>
         <div class="content">
             <p>{{ props.title }}</p>
+
             <div v-if="props.profs.length > 0">
                 <p v-for="(prof, i) in props.profs" :key="i">
                     {{ prof }}
@@ -43,6 +44,7 @@ const colors = {
             <div v-else>
                 <p>Pas de professeurs</p>
             </div>
+
             <div v-if="props.studentsGroups.length > 0">
                 <p v-for="(studentsGroup, i) in props.studentsGroups" :key="i">
                     {{ studentsGroup }}
