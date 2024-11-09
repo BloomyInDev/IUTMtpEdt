@@ -1,5 +1,5 @@
-import type { IClasse, ICours, IProf } from "../mariadb-service";
-import { db } from "../mariadb-service";
+import type { IClasse, ICours, IProf } from "../utils/mariadb-service";
+import { db } from "../utils/mariadb-service";
 
 export default defineEventHandler(async (req) => {
     const urlParams = new URLSearchParams(req.path.slice(req.path.indexOf("?")));

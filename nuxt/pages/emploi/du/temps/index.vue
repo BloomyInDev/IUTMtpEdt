@@ -1,32 +1,63 @@
 <script setup>
-const today = new Date()
-today.setHours(0,0,0)
-const start = Math.round(today.getTime() / 1000);
-today.setHours(23,59,59)
-const end = Math.round(today.getTime() / 1000);
-const {data} = await useFetch(`/api/events`, {
+definePageMeta({
+    layout: "bare",
+});
+const color = useColorMode()
+console.log(color.value)
+const { data } = await useFetch(`/api/events/days`, {
     query: {
-        start: start,
-        end: end
+        week: getDateWeek(new Date()),
+        groups: ["S4", "A1-Semestre-1", "S4b"].join(","),
     },
 });
-console.log(data.value.events);
-//const data = { start: ref(new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})), end: ref(new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})) };
+console.log(data);
 </script>
 <template>
-    <div class="p-8">
-        <!--<EdtTile title="Cours" :event-start="data.start" :event-end="data.end" color="#0000ff" />-->
-        <div v-for="event in data.events">
-            <EdtTile
-                :title="event.name"
-                :event-start="
-                    new Date(event.timeStart*1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-                "
-                :event-end="
-                    new Date(event.timeEnd*1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-                "
-                :profs="event.profs"
-            />
+    <div class="flex flex-col gap-2 p-2">
+        <div class="week-planning">
+            <p>Lundi</p>
+            <p>Mardi</p>
+            <p>Mercredi</p>
+            <p>Jeudi</p>
+            <p>Vendredi</p>
+            <p>Samedi</p>
+            <div v-for="day in data.events" class="day-planning">
+                <EdtTile
+                    v-for="eventData in day"
+                    :key="eventData.id"
+                    :title="eventData.name"
+                    :event-start="
+                        new Date(eventData.timeStart * 1000).toLocaleTimeString('fr-FR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        })
+                    "
+                    :event-end="
+                        new Date(eventData.timeEnd * 1000).toLocaleTimeString('fr-FR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        })
+                    "
+                    :profs="eventData.profs"
+                    :students-groups="eventData.studentsGroups"
+                    :place="eventData.place"
+                    :color="eventData.color"
+                />
+            </div>
         </div>
+        
     </div>
 </template>
+<style>
+.week-planning {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    @apply grid gap-1
+}
+.week-planning > p {
+    @apply text-center
+}
+
+.day-planning {
+    @apply flex gap-1 flex-col
+}
+</style>
