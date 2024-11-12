@@ -26,6 +26,7 @@ const colors = {
     brighter: computed(() => tinycolor(props.color).brighten(25)),
     darker: computed(() => tinycolor(props.color).darken(25)),
     isDark: computed(() => tinycolor(props.color).isDark()),
+    darkOrLight: computed(() => (tinycolor(props.color).darken(25).isDark() ? "tile dark" : "tile light")),
 };
 const profs = computed(() => props.profs.reduce((acc, cur, i) => `${acc}${i == 0 ? "" : " - "}${cur}`, ""));
 const studentsGroups = computed(() =>
@@ -34,7 +35,7 @@ const studentsGroups = computed(() =>
 </script>
 
 <template>
-    <div :class="colors.isDark ? 'tile dark' : 'tile light'">
+    <div :class="colors.darkOrLight.value">
         <div class="date">
             <p class="font-bold">{{ props.eventStart }}</p>
             <p>{{ props.eventEnd }}</p>
@@ -62,50 +63,59 @@ const studentsGroups = computed(() =>
 
 <style>
 .tile {
-    background-color: v-bind(colors.normal.value);
-    @apply flex h-fit w-full items-center gap-2 overflow-hidden rounded-lg text-sm;
+    display: flex;
+    height: fit-content;
+    width: 100%;
+    align-items: center;
+    gap: 0.5rem;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    background-color: v-bind(colors.darker.value);
 }
 .tile > div {
-    @apply h-full p-2;
+    height: 100%;
+    padding: 0.5rem;
 }
 
 .dark {
-    @apply text-white;
+    color: white;
 }
 .light {
-    @apply text-black;
+    color: black;
 }
 
 .date {
-    background-color: v-bind(colors.brighter.value);
-    @apply flex h-72 w-16 flex-shrink-0 flex-col items-center justify-center;
+    display: flex;
+    height: 18rem;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: v-bind(colors.normal.value);
 }
 
 .date > p {
-    @apply p-0;
+    padding: 0;
 }
 
 .content {
-    @apply flex flex-col justify-center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .content > p:first-child {
-    @apply text-lg font-bold;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: bold;
 }
 .content > div {
     grid-template-columns: auto 1fr;
-    @apply place-items-center;
+    place-items: center;
 }
 .content > div > p {
-    @apply w-full text-wrap;
-}
-
-@media (prefers-color-scheme: dark) {
-    .tile {
-        background-color: v-bind(colors.darker.value);
-    }
-
-    .date {
-        background-color: v-bind(colors.normal.value);
-    }
+    width: 100%;
+    text-wrap: wrap;
 }
 </style>

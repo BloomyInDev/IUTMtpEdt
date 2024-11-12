@@ -6,6 +6,7 @@ export default defineEventHandler(async (req) => {
     const urlParams = new URLSearchParams(req.path.slice(req.path.indexOf("?")));
     console.log(urlParams);
     const groups = urlParams.get("groups")?.split(",") || [];
+    const place = urlParams.get("place")
     const week = urlParams.get("week") != null ? parseInt(urlParams.get("week") as string) : null;
     if (week == null) {
         throw createError({
@@ -26,10 +27,19 @@ export default defineEventHandler(async (req) => {
     const endZone = getLastDayOfWeek(date);
     console.log(startZone, endZone, startZone.getTime() < endZone.getTime());
     try {
-        const [eventResults] = await db.execute<ICours[]>("SELECT * FROM Cours WHERE timeStart >= ? AND timeEnd <= ? ORDER BY timeStart ASC", [
-            Math.round(startZone.getTime() / 1000),
-            Math.round(endZone.getTime() / 1000),
-        ]);
+        let sql:string, args:unknown[]
+        if (place !== null) {
+            sql = "SELECT * FROM Cours WHERE timeStart >= ? AND timeEnd <= ? AND place LIKE ? ORDER BY timeStart ASC"
+            args = [Math.round(startZone.getTime() / 1000),
+                Math.round(endZone.getTime() / 1000),`%${place}%`]
+        } else {
+            sql = "SELECT * FROM Cours WHERE timeStart >= ? AND timeEnd <= ? ORDER BY timeStart ASC"
+            args = [
+                Math.round(startZone.getTime() / 1000),
+                Math.round(endZone.getTime() / 1000),
+            ]
+        }
+        const [eventResults] = await db.execute<ICours[]>(sql, args);
 
         const eventData: IAllData[][] = [[], [], [], [], [], [], []];
 
