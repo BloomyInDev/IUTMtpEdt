@@ -1,7 +1,9 @@
+import json
 from typing import Any
 from edt import scrape_edt
 import db
 
+DEBUG = True
 
 def get_profs(data: list[dict[str, Any]])->list[dict[str,str]]:
 	profs = []
@@ -22,6 +24,10 @@ def get_profs(data: list[dict[str, Any]])->list[dict[str,str]]:
 if __name__ == "__main__":
 	edt = scrape_edt()
 
+	if DEBUG == True:
+		with open("data.json","w") as f:
+			json.dump(edt,f)
+	
 	prof_db = db.Professor()
 	profs = get_profs(edt)
 	for prof in profs:

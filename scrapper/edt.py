@@ -21,8 +21,8 @@ URLS: dict[str, str] = parseTSV(TSV_NAME, True)
 # ---------------------------------------------------------------------
 
 
-def find_divs(css_class: str | None):
-	return (css_class != None) and (css_class.startswith("div"))
+def find_divs(css_id: str | None):
+	return (css_id != None) and (css_id.startswith("div"))
 
 
 def click_btn(page: Page, selector: str):
@@ -127,7 +127,11 @@ def parse_page(pageContent: str):
 				pass
 
 			elif "/" in tempForPlace[1]:
-				tempPlace = f'Campus {tempForPlace[1].split("/")[0]}- Batiment {tempForPlace[1].split(" / ")[-2]} - '
+				places = tempForPlace[1].split("/")
+				if (places[0] == places[-2]):
+					tempPlace = f'Campus {places[0]}- '
+				else:
+					tempPlace = f'Campus {places[0]}- Batiment {places[-2]} - '
 
 			else:
 				tempPlace = f"Campus {tempForPlace} - "
@@ -161,7 +165,7 @@ def parse_page(pageContent: str):
 
 def get_background_color(element: Tag):
 	bgcolor = "#ffffff"
-	styles = element.parent.parent.select_one("table").attrs["style"].split(";")
+	styles = element.parent.select_one("table").attrs["style"].split(";")
 	for style in styles:
 		if style.startswith("background-color"):
 			bgcolor: str = style.split(":")[-1]
