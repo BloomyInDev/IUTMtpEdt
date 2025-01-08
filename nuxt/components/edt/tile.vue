@@ -26,7 +26,7 @@ const colors = {
     brighter: computed(() => tinycolor(props.color).brighten(25)),
     darker: computed(() => tinycolor(props.color).darken(25)),
     isDark: computed(() => tinycolor(props.color).isDark()),
-    darkOrLight: computed(() => (tinycolor(props.color).darken(25).isDark() ? "tile dark" : "tile light")),
+    darkOrLight: computed(() => (tinycolor(props.color).darken(25).isDark() ? "dark" : "light")),
 };
 const profs = computed(() => props.profs.reduce((acc, cur, i) => `${acc}${i == 0 ? "" : " - "}${cur}`, ""));
 const studentsGroups = computed(() =>
@@ -35,15 +35,15 @@ const studentsGroups = computed(() =>
 </script>
 
 <template>
-    <div :class="colors.darkOrLight.value">
-        <div class="date">
-            <p class="font-bold">{{ props.eventStart }}</p>
+    <div id="tile" :class="colors.darkOrLight.value">
+        <div id="date">
+            <p>{{ props.eventStart }}</p>
             <p>{{ props.eventEnd }}</p>
         </div>
-        <div class="content">
+        <div id="content">
             <p>{{ props.title }}</p>
 
-            <div class="grid grid-cols-2 items-center justify-start gap-2 p-1">
+            <div>
                 <font-awesome
                     v-if="profs.length == 0 || (profs.length > 0 && profs.split('-').length < 2)"
                     icon="user"
@@ -62,7 +62,7 @@ const studentsGroups = computed(() =>
 </template>
 
 <style>
-.tile {
+#tile {
     display: flex;
     height: fit-content;
     width: 100%;
@@ -74,7 +74,8 @@ const studentsGroups = computed(() =>
     line-height: 1.25rem;
     background-color: v-bind(colors.darker.value);
 }
-.tile > div {
+
+#tile > div {
     height: 100%;
     padding: 0.5rem;
 }
@@ -86,36 +87,46 @@ const studentsGroups = computed(() =>
     color: black;
 }
 
-.date {
+#date {
     display: flex;
-    height: 18rem;
     flex-shrink: 0;
+    height: 100%;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    border-radius: 0.5rem;
+    margin: 0.25rem;
     background-color: v-bind(colors.normal.value);
 }
 
-.date > p {
+#date > p {
     padding: 0;
 }
+#date > p:first-child {
+    font-weight: bold;
+}
 
-.content {
+#content {
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
-.content > p:first-child {
+#content > p:first-child {
     font-size: 1.125rem;
     line-height: 1.75rem;
     font-weight: bold;
 }
-.content > div {
+#content > div {
+    display: grid;
     grid-template-columns: auto 1fr;
     place-items: center;
+    justify-content: start;
+    gap: 0.5rem;
+    padding: 0.25rem;
 }
-.content > div > p {
+#content > div > p {
     width: 100%;
     text-wrap: wrap;
+    margin: 0;
 }
 </style>

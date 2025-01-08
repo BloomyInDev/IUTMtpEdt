@@ -11,7 +11,6 @@
     },
     "dependencies": {
         "@nuxt/eslint": "^0.6.1",
-        "@nuxtjs/tailwindcss": "^6.12.2",
         "@vesp/nuxt-fontawesome": "^1.1.0",
         "mysql2": "^3.11.4",
         "nuxt": "^3.14.159",
@@ -27,7 +26,6 @@
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-prettier": "^5.2.1",
         "prettier": "^3.3.3",
-        "prettier-plugin-tailwindcss": "^0.6.8",
         "typescript": "^5.6.3",
         "vue-tsc": "^2.1.10"
     }

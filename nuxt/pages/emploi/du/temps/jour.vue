@@ -1,5 +1,6 @@
 <script setup>
 const week = ref(getDateWeek(new Date()));
+const day = ref(new Date().getDay()-1);
 const loading = ref(true);
 const { data, refresh, status } = await useFetch(`/api/events/days`, {
     query: {
@@ -7,28 +8,38 @@ const { data, refresh, status } = await useFetch(`/api/events/days`, {
         groups: ["S4", "A1-Semestre-1", "S4b"].join(","),
     },
 });
+console.log(day.value)
 const nextWeek = () => {
-    week.value++;
+    day.value++;
+    if (day.value > 6) {
+        day.value = 0;
+        week.value++;
+    }
     refresh();
 };
 const prevWeek = () => {
-    week.value--;
+    day.value--;
+    if (day.value < 0) {
+        day.value = 5;
+        week.value--;
+    }
     refresh();
 };
+const today = computed(()=>data.value.events.at(day.value))
 </script>
 <template>
     <div v-if="data == null">Il n'y a rien</div>
     <div v-else id="main">
         <div id="buttons">
             <button @click="prevWeek"><font-awesome icon="arrow-left" size="2x" /></button>
-            <p>Semaine {{ week }}</p>
+            <p>{{ new Date(today.day*1000).toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long" })  }}</p>
             <button @click="nextWeek"><font-awesome icon="arrow-right" size="2x" /></button>
         </div>
-        <div v-if="status == 'success'" id="week-planning">
-            <EdtDay v-for="event in data.events" :key="event.id" :data="event" :date="new Date()" :show-date="true" />
+        <div v-if="status == 'success'" id="day-planning">
+            <EdtDay id="today-event" :key="today.id" :data="today" :date="new Date()" :show-date="false" />
         </div>
         <div v-else>
-            <LoaderIcon/>
+            <LoaderIcon />
         </div>
     </div>
 </template>
@@ -39,19 +50,16 @@ div#main {
     gap: 0.5rem;
     padding: 0.5rem;
 }
-#week-planning {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+#day-planning {
+    display: flex;
+    justify-content: center;
     gap: 4px;
 }
-#week-planning > p {
+#day-planning > p {
     text-align: center;
 }
-
-.day-planning {
-    display: flex;
-    gap: 4px;
-    flex-direction: column;
+#today-event {
+   width: 90vw;
 }
 
 #buttons {

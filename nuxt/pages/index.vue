@@ -2,8 +2,16 @@
 const data = await useFetch("/api/events?groups=S4");
 </script>
 <template>
-    <div>
+    <div id="home">
         <div>coucou</div>
-        <div>{{ data }}</div>
+        <LoaderIcon/>
     </div>
 </template>
+<style>
+div#home {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+</style>

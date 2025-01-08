@@ -9,7 +9,7 @@ export default defineNuxtConfig({
     },
     fontawesome: {
         icons: {
-            solid: ["house", "calendar", "user", "users", "graduation-cap", "location-dot"],
+            solid: ["house", "calendar", "user", "users", "graduation-cap", "location-dot", "arrow-left", "arrow-right"],
         },
     },
 });

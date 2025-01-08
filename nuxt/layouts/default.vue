@@ -1,5 +1,5 @@
 <template>
-    <div class="layout grid min-h-screen">
+    <div class="layout">
         <header>
             <h1>IUT-Mtp-edt</h1>
             <nav>
@@ -23,11 +23,9 @@
 }
 header {
     display: flex;
-    width: 100%;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     padding: 0.5rem;
-    padding-right: 0.25rem;
     background-color: #374141;
 }
 header > h1 {
@@ -42,6 +40,9 @@ header > nav {
     align-items: center;
     gap: 0.5rem;
 }
+header > nav > * {
+    color: white;
+}
 
 main {
     background-color: #4b5555;
@@ -50,9 +51,12 @@ main {
 
 footer {
     display: flex;
-    width: 100%;
     background-color: #374141;
     padding: 0.5rem;
+}
+footer > p {
     text-align: center;
+    width: 100%;
+    color: white;
 }
 </style>

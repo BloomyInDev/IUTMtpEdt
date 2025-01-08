@@ -74,7 +74,7 @@ def parse_edt(page: Page, url: str):
 	data = []
 
 	# Loop to make
-	loopsToMake = 2
+	loopsToMake = 10
 	for i in range(loopsToMake):
 		print(f"\x1b[0KParsing week {i+1}", end="\r")
 		pageDump: str = page.content()

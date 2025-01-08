@@ -41,7 +41,7 @@ export default defineEventHandler(async (req) => {
         }
         const [eventResults] = await db.execute<ICours[]>(sql, args);
 
-        const eventData: IAllData[][] = [[], [], [], [], [], [], []];
+        const eventData: IData[][] = [[], [], [], [], [], []];
 
         for (let index = 0; index < eventResults.length; index++) {
             const row = eventResults[index];
@@ -61,16 +61,24 @@ export default defineEventHandler(async (req) => {
             });
         }
         if (groups.length > 0) {
-            const filteredEventData: IAllData[][] = [];
+            const filteredEventData: IAllData[] = [];
             for (let i = 0; i < eventData.length; i++) {
-                filteredEventData.push([]);
+                filteredEventData.push({day:0, events:[]});
                 const day = eventData[i];
                 for (let j = 0; j < day.length; j++) {
                     const event = day[j];
                     if (groups.some((group) => event.studentsGroups.includes(group))) {
-                        filteredEventData[i].push(event);
+                        filteredEventData[i].events.push(event);
                     }
                 }
+                if (filteredEventData[i].events.length > 0) {
+                    filteredEventData[i].day = filteredEventData[i].events[0].timeStart;
+                } else if (i>0) {
+                    filteredEventData[i].day = Math.round(new Date((filteredEventData[i-1].day*1000) + (24 * 60 * 60 * 1000)).getTime()/1000)
+                } else {
+                    filteredEventData[i].day = Math.round(startZone.getTime()/1000)
+                }
+                
             }
             return { events: filteredEventData };
         } else {
@@ -84,7 +92,11 @@ export default defineEventHandler(async (req) => {
     }
 });
 
-interface IAllData extends ICours {
+interface IAllData {
+    day: number;
+    events: IData[];
+}
+interface IData extends ICours {
     studentsGroups: string[];
     profs: string[];
 }
